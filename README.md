@@ -35,8 +35,8 @@ deterministic checks (no LLM judge).
 
 Of the four failures, one was an agent bug, now fixed and passing on rerun. Two were over-strict test
 expectations. One is a real limitation: a role-play jailbreak that Prompt Guard scores at 0.001. The
-[results page](evals/RESULTS.md) has the details. A full rerun after the fixes was cut short by the Groq free
-tier's daily token cap; every case it reached passed.
+[results page](evals/RESULTS.md) has the details. A full rerun after the fixes is in progress under the Groq free
+tier's daily token cap; all 26 cases it has completed so far passed.
 
 ## Architecture
 
@@ -97,25 +97,30 @@ flowchart TD
   The eval suite verifies them with string matching.
 - **Evals are deterministic.** Routing, tool calls, interrupts and required facts are checked directly, which
   keeps scores reproducible and cheap under free-tier rate limits.
+- **Bring-your-own-key.** The public demo never holds a key. Each visitor's key is validated by listing models
+  (no tokens spent) and lives only in that session's clients. Raw provider errors, which contain account
+  details, are never shown.
 - **Testable without a network.** `build_graph(llm, injection_score, checkpointer)` takes injectable
-  dependencies, so the 26 unit and graph tests use a scripted fake model and run offline in under a second.
+  dependencies, so the 29 tests use a scripted fake model and run offline in a few seconds.
 
 ## Run it locally
 
 ```bash
 uv venv --python 3.12 .venv
 uv pip install --python .venv/Scripts/python.exe -r requirements.txt   # Linux/macOS: .venv/bin/python
-cp .env.example .env                                                   # then add your GROQ_API_KEY
 .venv/Scripts/python.exe -m streamlit run app.py                       # http://localhost:8502
 ```
 
-Try the sample prompts in the sidebar. The demo orders are `ORD-1001` to `ORD-1005`. After an escalation, reply as
+The app is **bring-your-own-key**: paste a free Groq key from [console.groq.com/keys](https://console.groq.com/keys)
+in the sidebar. It's checked without spending tokens and kept only in your browser session. Then try the sample
+prompts in the sidebar. The demo orders are `ORD-1001` to `ORD-1005`. After an escalation, reply as
 the human agent from the **Support agent console** in the sidebar.
 
 ## Tests and evals
 
 ```bash
-python -m pytest -q                  # 26 offline tests (fake LLM), also run in CI
+python -m pytest -q                  # 29 offline tests (fake LLM), also run in CI
+cp .env.example .env                 # evals read GROQ_API_KEY from .env (the web app never does)
 python -m evals.run_evals            # live eval against Groq, writes evals/RESULTS.md
 python -m evals.run_evals --resume   # finish a run that hit the daily quota
 ```
@@ -128,8 +133,8 @@ demand using a `GROQ_API_KEY` repository secret.
 1. Push this repo to GitHub.
 2. At [share.streamlit.io](https://share.streamlit.io), create an app from the repo with `app.py` as the
    entrypoint and Python 3.12 under *Advanced settings*.
-3. Add the secret `GROQ_API_KEY = "..."`. Top-level secrets are exposed as environment variables, so no code
-   change is needed.
+
+No secrets are needed: every visitor brings their own Groq key, so a public demo can't run up anyone's quota.
 
 ## Project structure
 
@@ -148,13 +153,13 @@ data/                Mock FAQ and orders
 
 ## Limitations
 
-- State is in memory (`InMemorySaver`, module-level mock stores), so conversations, tickets and refunds reset on
-  restart and are shared by everyone using one server. A SQLite or Postgres checkpointer and a real order API are
-  the next steps.
+- State is in memory. Each browser session has its own graph and conversation memory (`InMemorySaver`), but the
+  mock ticket and refund stores are shared by everyone on one server, and everything resets on restart. A SQLite
+  or Postgres checkpointer and a real order API are the next steps.
 - The FAQ search is keyword-based. Embedding retrieval would handle paraphrases better.
 - Prompt Guard 2 targets instruction-override attacks, and misses role-play social engineering (see `inj-06`).
-- On the Groq free tier, a busy demo or a full eval run can hit the daily token cap. The UI then shows a
-  friendly retry message.
+- On the Groq free tier, a full eval run can hit the daily token cap. The runner stops cleanly and `--resume`
+  finishes it later; in the app, a rate-limited key gets a friendly retry message.
 
 ## Stack
 

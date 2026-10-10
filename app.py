@@ -6,12 +6,12 @@ import uuid
 from collections.abc import Iterator
 
 import streamlit as st
-from dotenv import load_dotenv
-from groq import RateLimitError
+from groq import AuthenticationError, RateLimitError
 from langchain_core.messages import AIMessage, AIMessageChunk, HumanMessage
 from langgraph.types import Command
 
 from agent.graph import build_graph
+from agent.llm import validate_api_key
 from agent.tools import _orders
 from ui.graph_view import SUBAGENTS, Trace, node_key, steps_markdown, to_svg
 
@@ -29,22 +29,52 @@ SAMPLE_PROMPTS = [
 st.set_page_config(page_title="ShopNova Support", page_icon="🛍️", layout="wide")
 
 
-@st.cache_resource
-def get_graph():
-    load_dotenv()
-    return build_graph()
+def connect(api_key: str) -> str | None:
+    """Validate the visitor's key and build this session's graph. The key is never stored anywhere else."""
+    error = validate_api_key(api_key)
+    if error is None:
+        st.session_state.graph = build_graph(api_key=api_key.strip())
+        st.session_state.thread_id = str(uuid.uuid4())
+        st.session_state.trace = Trace()
+    return error
 
 
-try:
-    graph = get_graph()
-except RuntimeError as exc:
-    st.error(str(exc))
+def forget_key() -> None:
+    for key in ("graph", "thread_id", "trace", "queued_prompt", "queued_resume"):
+        st.session_state.pop(key, None)
+
+
+def key_gate() -> None:
+    """Bring-your-own-key: ask for a Groq key before anything calls a model."""
+    st.subheader("🔑 Connect your Groq API key")
+    st.markdown(
+        "This demo runs on **your** free Groq key. Create one at "
+        "[console.groq.com/keys](https://console.groq.com/keys). The key stays in this browser session only: "
+        "it isn't saved, logged or shared, and it's gone when you close the tab or click *Forget key*."
+    )
+    with st.form("api_key_form", clear_on_submit=True):
+        api_key = st.text_input("Groq API key", type="password", placeholder="gsk_…")
+        if st.form_submit_button("Connect", type="primary") and api_key:
+            with st.spinner("Checking key…"):
+                error = connect(api_key)
+            if error:
+                st.error(error)
+            else:
+                st.rerun()
+
+
+if "graph" not in st.session_state:
+    with st.sidebar:
+        st.title("🛍️ ShopNova Support")
+        st.caption("LangGraph + Groq customer service agent")
+        key_gate()
+    st.header("How can we help today?")
+    st.info("👈 Connect a Groq API key in the sidebar to start chatting.")
+    st.subheader("🕸️ Agent graph")
+    st.markdown(to_svg(Trace()), unsafe_allow_html=True)
     st.stop()
 
-if "thread_id" not in st.session_state:
-    st.session_state.thread_id = str(uuid.uuid4())
-if "trace" not in st.session_state:
-    st.session_state.trace = Trace()
+graph = st.session_state.graph
 config = {"configurable": {"thread_id": st.session_state.thread_id}}
 trace: Trace = st.session_state.trace
 
@@ -61,6 +91,9 @@ pending = snapshot.interrupts[0].value if snapshot.interrupts else None
 with st.sidebar:
     st.title("🛍️ ShopNova Support")
     st.caption("LangGraph + Groq customer service agent")
+    key_col, forget_col = st.columns([3, 2], vertical_alignment="center")
+    key_col.success("Groq key connected", icon="🔑")
+    forget_col.button("Forget key", on_click=forget_key, width="stretch")
     if st.button("➕ New conversation", width="stretch"):
         st.session_state.thread_id = str(uuid.uuid4())
         st.session_state.trace = Trace()
@@ -148,7 +181,12 @@ def send(payload, new_turn: bool) -> None:
             st.write_stream(run_graph(payload))
         except RateLimitError:
             trace.finish(None)
-            st.warning("The demo has reached its free model quota for now. Please try again in a few minutes.")
+            st.warning("Your Groq key has hit its rate limit. Please wait a minute and try again.")
+            return
+        except AuthenticationError:
+            trace.finish(None)
+            forget_key()
+            st.error("Groq rejected the API key (it may have been revoked). Please connect a key again.")
             return
         except Exception:  # never show raw provider errors (they include account details) to customers
             logger.exception("Graph run failed")

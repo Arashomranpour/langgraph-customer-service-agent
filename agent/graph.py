@@ -17,16 +17,16 @@ def build_graph(
     llm: BaseChatModel | None = None,
     injection_score: Callable[[str], float] | None = None,
     checkpointer: BaseCheckpointSaver | None = None,
+    api_key: str | None = None,
 ) -> CompiledStateGraph:
-    """Pass `llm` and `injection_score` fakes in tests; None uses the real Groq models."""
+    """Pass `llm` and `injection_score` fakes in tests. Otherwise real Groq models are built from `api_key`
+    (the web app's per-session key) or, if that is None, from GROQ_API_KEY in the environment (CLI, evals)."""
+    from agent import llm as groq
+
     if llm is None:
-        from agent.llm import get_llm
-
-        llm = get_llm()
+        llm = groq.make_llm(api_key) if api_key else groq.get_llm()
     if injection_score is None:
-        from agent.llm import get_prompt_guard
-
-        injection_score = get_prompt_guard()
+        injection_score = groq.make_prompt_guard(api_key) if api_key else groq.get_prompt_guard()
 
     builder = StateGraph(SupportState)
     builder.add_node("guardrails", nodes.guardrails)
