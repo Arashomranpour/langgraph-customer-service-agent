@@ -1,0 +1,6 @@
+[server]
+# 8501 is taken by Docker Desktop on this machine
+port = 8502
+
+[browser]
+gatherUsageStats = false

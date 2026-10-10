@@ -1,0 +1,16 @@
+[project]
+name = "shopnova-support-agent"
+version = "0.1.0"
+description = "Customer service agent built with LangGraph, Groq and Streamlit"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501"]  # `ruff format` owns line length; long prompt strings are left intact
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

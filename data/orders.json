@@ -1,0 +1,53 @@
+{
+  "ORD-1001": {
+    "customer_email": "maya@example.com",
+    "status": "delivered",
+    "items": [{"name": "Wireless Headphones", "qty": 1, "price": 89.99}],
+    "total": 89.99,
+    "days_since_delivery": 5,
+    "carrier": "UPS",
+    "tracking_number": "1Z999AA10123456784",
+    "refunded": false
+  },
+  "ORD-1002": {
+    "customer_email": "liam@example.com",
+    "status": "shipped",
+    "items": [{"name": "Running Shoes", "qty": 1, "price": 120.0}, {"name": "Sports Socks (3-pack)", "qty": 2, "price": 12.5}],
+    "total": 145.0,
+    "days_since_delivery": null,
+    "carrier": "FedEx",
+    "tracking_number": "794644790138",
+    "estimated_delivery": "in 2 days",
+    "refunded": false
+  },
+  "ORD-1003": {
+    "customer_email": "sara@example.com",
+    "status": "processing",
+    "items": [{"name": "Coffee Grinder", "qty": 1, "price": 59.0}],
+    "total": 59.0,
+    "days_since_delivery": null,
+    "carrier": null,
+    "tracking_number": null,
+    "refunded": false
+  },
+  "ORD-1004": {
+    "customer_email": "noah@example.com",
+    "status": "delivered",
+    "items": [{"name": "Desk Lamp", "qty": 1, "price": 34.5}],
+    "total": 34.5,
+    "days_since_delivery": 45,
+    "carrier": "USPS",
+    "tracking_number": "9400111899223197428490",
+    "refunded": false
+  },
+  "ORD-1005": {
+    "customer_email": "maya@example.com",
+    "status": "delivered",
+    "items": [{"name": "Phone Case", "qty": 1, "price": 19.99}],
+    "total": 19.99,
+    "days_since_delivery": 10,
+    "carrier": "UPS",
+    "tracking_number": "1Z999AA10123456999",
+    "refunded": true
+  }
+}

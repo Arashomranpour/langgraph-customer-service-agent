@@ -1,0 +1,12 @@
+[
+  {"question": "What is your return policy?", "answer": "Items can be returned within 30 days of delivery for a full refund, as long as they are unused and in original packaging.", "tags": ["return", "returns", "refund", "policy", "30", "days"]},
+  {"question": "How long do refunds take?", "answer": "Approved refunds are issued to the original payment method within 5-7 business days.", "tags": ["refund", "refunds", "money", "back", "long", "days"]},
+  {"question": "How much does shipping cost?", "answer": "Standard shipping is free on orders over $50; otherwise it costs $4.99. Express shipping is $14.99.", "tags": ["shipping", "cost", "free", "express", "delivery", "price"]},
+  {"question": "How long does delivery take?", "answer": "Standard delivery takes 3-5 business days; express delivery takes 1-2 business days.", "tags": ["delivery", "shipping", "long", "time", "days", "arrive"]},
+  {"question": "Do you ship internationally?", "answer": "Yes, we ship to over 40 countries. International delivery takes 7-14 business days and duties may apply.", "tags": ["international", "ship", "countries", "abroad", "customs", "duties"]},
+  {"question": "Can I change or cancel my order?", "answer": "Orders can be changed or cancelled while they are still in 'processing' status. Once shipped, you can return the item instead.", "tags": ["cancel", "change", "modify", "order", "processing"]},
+  {"question": "What payment methods do you accept?", "answer": "We accept Visa, Mastercard, American Express, PayPal, and Apple Pay.", "tags": ["payment", "pay", "card", "paypal", "visa", "methods"]},
+  {"question": "How do I reset my password?", "answer": "Click 'Forgot password' on the sign-in page and follow the link we email you. The link expires after 1 hour.", "tags": ["password", "reset", "login", "account", "sign", "forgot"]},
+  {"question": "Do products have a warranty?", "answer": "All electronics include a 1-year manufacturer warranty. Contact support with your order ID to start a warranty claim.", "tags": ["warranty", "broken", "defective", "guarantee", "repair"]},
+  {"question": "What are your support hours?", "answer": "Human support is available Monday to Friday, 9am-6pm (UTC). This assistant is available 24/7.", "tags": ["hours", "support", "contact", "open", "human", "agent"]}
+]
